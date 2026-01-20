@@ -1,0 +1,99 @@
+/* Image Placeholder Styles */
+
+.image-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #ff6b35, #004e89);
+  border-radius: 5px;
+  overflow: hidden;
+  font-size: 48px;
+  line-height: 1;
+}
+
+.image-placeholder.emoji-placeholder {
+  background: linear-gradient(135deg, rgba(255, 107, 53, 0.1), rgba(0, 78, 137, 0.1));
+  border: 2px dashed #e0e0e0;
+}
+
+.emoji-content {
+  display: inline-block;
+  text-align: center;
+}
+
+/* Size Variants */
+.image-placeholder.small {
+  width: 100px;
+  height: 100px;
+  font-size: 36px;
+}
+
+.image-placeholder.medium {
+  width: 200px;
+  height: 200px;
+  font-size: 48px;
+}
+
+.image-placeholder.large {
+  width: 400px;
+  height: 300px;
+  font-size: 64px;
+}
+
+.image-placeholder.hero {
+  width: 100%;
+  height: 400px;
+  font-size: 80px;
+  border-radius: 0;
+}
+
+.image-placeholder.avatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  font-size: 40px;
+}
+
+/* Actual Images */
+.image-placeholder img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .image-placeholder.large {
+    width: 100%;
+    height: 250px;
+  }
+
+  .image-placeholder.hero {
+    height: 300px;
+    font-size: 60px;
+  }
+
+  .image-placeholder {
+    font-size: 36px;
+  }
+}
+
+@media (max-width: 480px) {
+  .image-placeholder.large {
+    height: 200px;
+    font-size: 48px;
+  }
+
+  .image-placeholder.medium {
+    width: 150px;
+    height: 150px;
+    font-size: 36px;
+  }
+
+  .image-placeholder.hero {
+    height: 200px;
+    font-size: 40px;
+  }
+}

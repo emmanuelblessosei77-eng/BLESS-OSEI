@@ -1,0 +1,119 @@
+.service-card {
+  background: var(--white);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 15px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.service-card:hover {
+  border-color: var(--primary-color);
+  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.1);
+}
+
+.service-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  cursor: pointer;
+}
+
+.service-icon {
+  font-size: 40px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 60px;
+  background: rgba(255, 107, 53, 0.1);
+  border-radius: 8px;
+}
+
+.service-title-section {
+  flex: 1;
+}
+
+.service-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-dark);
+  margin-bottom: 8px;
+}
+
+.service-description {
+  font-size: 14px;
+  color: var(--text-light);
+  line-height: 1.5;
+}
+
+.service-arrow {
+  font-size: 20px;
+  color: var(--primary-color);
+  transition: transform 0.3s ease;
+  flex-shrink: 0;
+}
+
+.service-card.expanded .service-arrow {
+  transform: rotate(90deg);
+}
+
+.service-details {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid var(--border-color);
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.service-details p {
+  color: var(--text-light);
+  margin-bottom: 12px;
+  line-height: 1.6;
+}
+
+.service-price {
+  font-weight: 600;
+  color: var(--primary-color);
+  font-size: 16px;
+  margin-bottom: 12px;
+}
+
+.service-read-more {
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.service-read-more:hover {
+  background: var(--secondary-color);
+}
+
+@media (max-width: 768px) {
+  .service-header {
+    flex-wrap: wrap;
+  }
+
+  .service-icon {
+    width: 50px;
+    height: 50px;
+    font-size: 28px;
+  }
+}
