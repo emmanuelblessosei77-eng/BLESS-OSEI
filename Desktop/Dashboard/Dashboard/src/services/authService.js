@@ -1,68 +1,54 @@
-import { initialUsers } from '../utils/mockData.js'
-import { readFromStorage, writeToStorage } from '../utils/storage.js'
+const API_URL = 'http://localhost:5000/api'
 
-const USERS_KEY = 'dashboard_users'
-const SESSION_KEY = 'dashboard_session_user'
+export async function signupUser({ name, email, password }) {
+  try {
+    const response = await fetch(`${API_URL}/auth/signup`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, password })
+    })
 
-function ensureSeeded() {
-  const existing = readFromStorage(USERS_KEY, [])
-  if (!existing.length) {
-    writeToStorage(USERS_KEY, initialUsers)
+    if (!response.ok) {
+      const error = await response.json()
+      throw new Error(error.message || 'Signup failed')
+    }
+
+    const data = await response.json()
+    localStorage.setItem('dashboard_session_user', JSON.stringify(data.user))
+    
+    return data.user
+  } catch (error) {
+    throw new Error(error.message || 'Signup failed')
   }
 }
 
-export function getUsers() {
-  ensureSeeded()
-  return readFromStorage(USERS_KEY, [])
+export async function loginUser({ email, password }) {
+  try {
+    const response = await fetch(`${API_URL}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    })
+
+    if (!response.ok) {
+      const error = await response.json()
+      throw new Error(error.message || 'Login failed')
+    }
+
+    const data = await response.json()
+    localStorage.setItem('dashboard_session_user', JSON.stringify(data.user))
+    
+    return data.user
+  } catch (error) {
+    throw new Error(error.message || 'Login failed')
+  }
 }
 
-export function saveUsers(users) {
-  writeToStorage(USERS_KEY, users)
+export async function logoutUser() {
+  localStorage.removeItem('dashboard_session_user')
 }
 
 export function getCurrentUser() {
-  return readFromStorage(SESSION_KEY, null)
+  const user = localStorage.getItem('dashboard_session_user')
+  return user ? JSON.parse(user) : null
 }
-
-export function signupUser({ name, email, password }) {
-  if (!name || !email || !password) {
-    throw new Error('All fields are required')
-  }
-
-  const users = getUsers()
-  const exists = users.find((u) => u.email.toLowerCase() === email.toLowerCase())
-  if (exists) {
-    throw new Error('Email already registered')
-  }
-
-  const newUser = {
-    id: crypto.randomUUID?.() ?? String(Date.now()),
-    name,
-    email,
-    password,
-  }
-
-  const updated = [...users, newUser]
-  saveUsers(updated)
-  writeToStorage(SESSION_KEY, newUser)
-  return newUser
-}
-
-export function loginUser({ email, password }) {
-  const users = getUsers()
-  const user = users.find(
-    (u) => u.email.toLowerCase() === email.toLowerCase() && u.password === password,
-  )
-
-  if (!user) {
-    throw new Error('Invalid credentials')
-  }
-
-  writeToStorage(SESSION_KEY, user)
-  return user
-}
-
-export function logoutUser() {
-  localStorage.removeItem(SESSION_KEY)
-}
-

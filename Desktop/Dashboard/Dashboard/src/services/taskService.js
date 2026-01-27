@@ -1,116 +1,141 @@
-import { initialTasks } from '../utils/mockData.js'
-import { readFromStorage, writeToStorage } from '../utils/storage.js'
+const API_URL = 'http://localhost:5000/api'
 
-const TASK_KEY_PREFIX = 'dashboard_tasks_'
-
-const keyFor = (userId) => `${TASK_KEY_PREFIX}${userId}`
-
-function ensureSeeded(userId) {
-  const existing = readFromStorage(keyFor(userId), null)
-  if (!existing) {
-    writeToStorage(keyFor(userId), initialTasks)
+function getHeaders() {
+  const user = JSON.parse(localStorage.getItem('dashboard_session_user') || '{}')
+  return {
+    'Content-Type': 'application/json',
+    'x-user-id': user.id || ''
   }
 }
 
-export function getTasks(userId) {
-  if (!userId) return []
-  ensureSeeded(userId)
-  return readFromStorage(keyFor(userId), [])
-}
+export async function getTasks() {
+  try {
+    const response = await fetch(`${API_URL}/tasks`, {
+      method: 'GET',
+      headers: getHeaders()
+    })
 
-export function saveTasks(userId, tasks) {
-  writeToStorage(keyFor(userId), tasks)
-}
+    if (!response.ok) {
+      throw new Error('Failed to fetch tasks')
+    }
 
-function generateId(prefix) {
-  return `${prefix}-${crypto.randomUUID?.() ?? Date.now()}`
-}
-
-export function addTask(userId, task) {
-  const tasks = getTasks(userId)
-  const newTask = {
-    id: generateId('task'),
-    title: task.title,
-    description: task.description || '',
-    status: task.status || 'pending',
-    completed: false,
-    subtasks: [],
+    return await response.json()
+  } catch (error) {
+    console.error('Error fetching tasks:', error)
+    throw error
   }
-  tasks.push(newTask)
-  saveTasks(userId, tasks)
-  return newTask
 }
 
-export function updateTask(userId, taskId, updates) {
-  const tasks = getTasks(userId).map((task) =>
-    task.id === taskId ? { ...task, ...updates } : task,
-  )
-  saveTasks(userId, tasks)
-}
+export async function addTask(task) {
+  try {
+    const response = await fetch(`${API_URL}/tasks`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify(task)
+    })
 
-export function deleteTask(userId, taskId) {
-  const tasks = getTasks(userId).filter((task) => task.id !== taskId)
-  saveTasks(userId, tasks)
-}
-
-export function toggleTask(userId, taskId) {
-  const tasks = getTasks(userId).map((task) =>
-    task.id === taskId ? { ...task, completed: !task.completed } : task,
-  )
-  saveTasks(userId, tasks)
-}
-
-export function updateTaskStatus(userId, taskId, status) {
-  const tasks = getTasks(userId).map((task) =>
-    task.id === taskId ? { ...task, status } : task,
-  )
-  saveTasks(userId, tasks)
-}
-
-export function addSubtask(userId, taskId, subtask) {
-  const tasks = getTasks(userId).map((task) => {
-    if (task.id !== taskId) return task
-    const newSubtask = {
-      id: generateId('sub'),
-      title: subtask.title,
-      completed: false,
+    if (!response.ok) {
+      throw new Error('Failed to create task')
     }
-    return { ...task, subtasks: [...(task.subtasks || []), newSubtask] }
-  })
-  saveTasks(userId, tasks)
+
+    return await response.json()
+  } catch (error) {
+    throw error
+  }
 }
 
-export function updateSubtask(userId, taskId, subtaskId, updates) {
-  const tasks = getTasks(userId).map((task) => {
-    if (task.id !== taskId) return task
-    return {
-      ...task,
-      subtasks: task.subtasks.map((sub) =>
-        sub.id === subtaskId ? { ...sub, ...updates } : sub,
-      ),
+export async function updateTask(taskId, updates) {
+  try {
+    const response = await fetch(`${API_URL}/tasks/${taskId}`, {
+      method: 'PUT',
+      headers: getHeaders(),
+      body: JSON.stringify(updates)
+    })
+
+    if (!response.ok) {
+      throw new Error('Failed to update task')
     }
-  })
-  saveTasks(userId, tasks)
+
+    return await response.json()
+  } catch (error) {
+    throw error
+  }
 }
 
-export function deleteSubtask(userId, taskId, subtaskId) {
-  const tasks = getTasks(userId).map((task) => {
-    if (task.id !== taskId) return task
-    return { ...task, subtasks: task.subtasks.filter((sub) => sub.id !== subtaskId) }
-  })
-  saveTasks(userId, tasks)
-}
+export async function deleteTask(taskId) {
+  try {
+    const response = await fetch(`${API_URL}/tasks/${taskId}`, {
+      method: 'DELETE',
+      headers: getHeaders()
+    })
 
-export function toggleSubtask(userId, taskId, subtaskId) {
-  const tasks = getTasks(userId).map((task) => {
-    if (task.id !== taskId) return task
-    return {
-      ...task,
-      subtasks: task.subtasks.map((sub) =>
-        sub.id === subtaskId ? { ...sub, completed: !sub.completed } : sub,
-      ),
+    if (!response.ok) {
+      throw new Error('Failed to delete task')
     }
-  })
-  saveTasks(userId, tasks)
+  } catch (error) {
+    throw error
+  }
 }
 
+export async function toggleTask(task) {
+  return updateTask(task.id, { completed: !task.completed })
+}
+
+export async function updateTaskStatus(taskId, status) {
+  return updateTask(taskId, { status })
+}
+
+export async function addSubtask(taskId, subtask) {
+  try {
+    const response = await fetch(`${API_URL}/tasks/${taskId}/subtasks`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify(subtask)
+    })
+
+    if (!response.ok) {
+      throw new Error('Failed to create subtask')
+    }
+
+    return await response.json()
+  } catch (error) {
+    throw error
+  }
+}
+
+export async function updateSubtask(subtaskId, updates) {
+  try {
+    const response = await fetch(`${API_URL}/tasks/subtasks/${subtaskId}`, {
+      method: 'PUT',
+      headers: getHeaders(),
+      body: JSON.stringify(updates)
+    })
+
+    if (!response.ok) {
+      throw new Error('Failed to update subtask')
+    }
+
+    return await response.json()
+  } catch (error) {
+    throw error
+  }
+}
+
+export async function deleteSubtask(subtaskId) {
+  try {
+    const response = await fetch(`${API_URL}/tasks/subtasks/${subtaskId}`, {
+      method: 'DELETE',
+      headers: getHeaders()
+    })
+
+    if (!response.ok) {
+      throw new Error('Failed to delete subtask')
+    }
+  } catch (error) {
+    throw error
+  }
+}
+
+export async function toggleSubtask(subtask) {
+  return updateSubtask(subtask.id, { completed: !subtask.completed })
+}

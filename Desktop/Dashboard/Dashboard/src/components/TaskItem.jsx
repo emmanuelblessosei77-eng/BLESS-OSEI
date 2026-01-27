@@ -2,13 +2,13 @@ import SubTaskItem from './SubTaskItem.jsx'
 
 const STATUS_COLORS = {
   pending: '#94a3b8',
-  ongoing: '#f59e0b',
+  'in-progress': '#f59e0b',
   completed: '#10b981',
 }
 
 const STATUS_LABELS = {
   pending: 'Pending',
-  ongoing: 'Ongoing',
+  'in-progress': 'In Progress',
   completed: 'Completed',
 }
 
@@ -23,12 +23,16 @@ function TaskItem({
   onDeleteSubtask,
   onUpdateStatus,
 }) {
-  const statuses = ['pending', 'ongoing', 'completed']
+  const statuses = ['pending', 'in-progress', 'completed']
   const currentStatusIndex = statuses.indexOf(task.status || 'pending')
 
-  const handleStatusChange = () => {
+  const handleStatusChange = async () => {
     const nextStatusIndex = (currentStatusIndex + 1) % statuses.length
-    onUpdateStatus?.(task.id, statuses[nextStatusIndex])
+    try {
+      await onUpdateStatus?.(task.id, statuses[nextStatusIndex])
+    } catch (error) {
+      console.error('Failed to update status:', error)
+    }
   }
 
   return (
@@ -39,7 +43,13 @@ function TaskItem({
             <input
               type="checkbox"
               checked={task.completed}
-              onChange={() => onToggleTask(task.id)}
+              onChange={async () => {
+                try {
+                  await onToggleTask(task)
+                } catch (error) {
+                  console.error('Failed to toggle task:', error)
+                }
+              }}
             />
             <h3 className={task.completed ? 'strikethrough' : ''}>{task.title}</h3>
             <button
@@ -57,7 +67,17 @@ function TaskItem({
           <button className="btn btn-ghost" type="button" onClick={() => onEditTask(task)}>
             Edit
           </button>
-          <button className="btn btn-danger" type="button" onClick={() => onDeleteTask(task.id)}>
+          <button
+            className="btn btn-danger"
+            type="button"
+            onClick={async () => {
+              try {
+                await onDeleteTask(task.id)
+              } catch (error) {
+                console.error('Failed to delete task:', error)
+              }
+            }}
+          >
             Delete
           </button>
         </div>

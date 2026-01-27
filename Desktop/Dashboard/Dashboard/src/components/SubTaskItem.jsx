@@ -5,7 +5,13 @@ function SubTaskItem({ taskId, subtask, onToggle, onEdit, onDelete }) {
         <input
           type="checkbox"
           checked={subtask.completed}
-          onChange={() => onToggle(taskId, subtask.id)}
+          onChange={async () => {
+            try {
+              await onToggle(subtask)
+            } catch (error) {
+              console.error('Failed to toggle subtask:', error)
+            }
+          }}
         />
         <span className={subtask.completed ? 'muted strikethrough' : ''}>
           {subtask.title}
@@ -18,7 +24,13 @@ function SubTaskItem({ taskId, subtask, onToggle, onEdit, onDelete }) {
         <button
           className="btn btn-danger"
           type="button"
-          onClick={() => onDelete(taskId, subtask.id)}
+          onClick={async () => {
+            try {
+              await onDelete(subtask.id)
+            } catch (error) {
+              console.error('Failed to delete subtask:', error)
+            }
+          }}
         >
           Delete
         </button>

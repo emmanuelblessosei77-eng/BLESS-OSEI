@@ -12,8 +12,11 @@ const emptySubtask = { title: '' }
 
 function Dashboard() {
   const { user, logout } = useAuth()
+
   const {
     tasks,
+    loading,
+    error,
     addTask,
     updateTask,
     deleteTask,
@@ -45,19 +48,23 @@ function Dashboard() {
     setTaskModalOpen(true)
   }
 
-  const handleSaveTask = (e) => {
+  const handleSaveTask = async (e) => {
     e.preventDefault()
     if (!taskForm.title.trim()) return
 
-    if (editingTaskId) {
-      updateTask(editingTaskId, taskForm)
-    } else {
-      addTask(taskForm)
-    }
+    try {
+      if (editingTaskId) {
+        await updateTask(editingTaskId, taskForm)
+      } else {
+        await addTask(taskForm)
+      }
 
-    setTaskModalOpen(false)
-    setTaskForm(emptyTask)
-    setEditingTaskId(null)
+      setTaskModalOpen(false)
+      setTaskForm(emptyTask)
+      setEditingTaskId(null)
+    } catch (error) {
+      return
+    }
   }
 
   const openAddSubtask = (taskId) => {
@@ -74,19 +81,23 @@ function Dashboard() {
     setSubtaskModalOpen(true)
   }
 
-  const handleSaveSubtask = (e) => {
+  const handleSaveSubtask = async (e) => {
     e.preventDefault()
     if (!subtaskForm.title.trim() || !targetTaskId) return
 
-    if (editingSubtaskId) {
-      updateSubtask(targetTaskId, editingSubtaskId, { title: subtaskForm.title })
-    } else {
-      addSubtask(targetTaskId, subtaskForm)
-    }
+    try {
+      if (editingSubtaskId) {
+        await updateSubtask(editingSubtaskId, { title: subtaskForm.title })
+      } else {
+        await addSubtask(targetTaskId, subtaskForm)
+      }
 
-    setSubtaskModalOpen(false)
-    setSubtaskForm(emptySubtask)
-    setEditingSubtaskId(null)
+      setSubtaskModalOpen(false)
+      setSubtaskForm(emptySubtask)
+      setEditingSubtaskId(null)
+    } catch (error) {
+      return
+    }
   }
 
   return (
@@ -107,26 +118,64 @@ function Dashboard() {
       </header>
 
       <div className="grid">
-        {tasks.length === 0 && (
-          <Card title="No tasks yet">
-            <p className="muted">Create a task to get started.</p>
+        {loading && (
+          <Card title="Loading...">
+            <p className="muted">Fetching your tasks from PostgreSQL...</p>
+            <p className="muted small">Please wait...</p>
           </Card>
         )}
 
-        {tasks.map((task) => (
-          <TaskItem
-            key={task.id}
-            task={task}
-            onToggleTask={toggleTask}
-            onEditTask={openEditTask}
-            onDeleteTask={deleteTask}
-            onAddSubtask={openAddSubtask}
-            onEditSubtask={openEditSubtask}
-            onToggleSubtask={toggleSubtask}
-            onDeleteSubtask={deleteSubtask}
-            onUpdateStatus={updateTaskStatus}
-          />
-        ))}
+        {error && (
+          <Card title="Error Loading Tasks">
+            <p className="muted" style={{ color: 'red', marginBottom: '1rem' }}>
+              {error}
+            </p>
+            <p className="muted small">
+              Make sure:
+              <br />• Backend server is running (php artisan serve)
+              <br />• PostgreSQL is connected
+              <br />• You are logged in
+            </p>
+            <button
+              className="btn btn-primary"
+              onClick={() => window.location.reload()}
+              style={{ marginTop: '1rem' }}
+            >
+              Retry
+            </button>
+          </Card>
+        )}
+
+        {!loading && !error && tasks.length === 0 && (
+          <Card title="No tasks yet">
+            <p className="muted">Create a task to get started.</p>
+            <p className="muted small">
+              Your tasks will be saved to PostgreSQL and displayed here.
+            </p>
+          </Card>
+        )}
+
+        {!loading && !error && tasks.length > 0 && (
+          <div style={{ width: '100%' }}>
+            <p className="muted small" style={{ marginBottom: '1rem' }}>
+              Showing {tasks.length} task{tasks.length !== 1 ? 's' : ''} from PostgreSQL
+            </p>
+            {tasks.map((task) => (
+              <TaskItem
+                key={task.id}
+                task={task}
+                onToggleTask={toggleTask}
+                onEditTask={openEditTask}
+                onDeleteTask={deleteTask}
+                onAddSubtask={openAddSubtask}
+                onEditSubtask={openEditSubtask}
+                onToggleSubtask={toggleSubtask}
+                onDeleteSubtask={deleteSubtask}
+                onUpdateStatus={updateTaskStatus}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
       <Modal
@@ -192,6 +241,5 @@ function Dashboard() {
     </div>
   )
 }
-
 export default Dashboard
 

@@ -14,63 +14,129 @@ import {
 
 export function useTasks(userId) {
   const [tasks, setTasks] = useState([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
+
+  const fetchTasks = async () => {
+    if (!userId) {
+      setTasks([])
+      return
+    }
+
+    setLoading(true)
+    setError(null)
+    try {
+      const fetchedTasks = await getTasks()
+      console.log('✅ Tasks fetched from PostgreSQL:', fetchedTasks)
+      setTasks(Array.isArray(fetchedTasks) ? fetchedTasks : [])
+    } catch (err) {
+      const errorMessage = err.response?.data?.message || err.message || 'Failed to fetch tasks'
+      setError(errorMessage)
+      console.error('❌ Failed to fetch tasks:', err)
+      console.error('Error details:', {
+        message: err.message,
+        response: err.response?.data,
+        status: err.response?.status,
+      })
+      setTasks([])
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
-    let cancelled = false
-    const sync = () => {
-      const next = userId ? getTasks(userId) : []
-      if (!cancelled) {
-        setTasks(next)
-      }
-    }
-    // Defer to a microtask to satisfy lint rule while keeping UI in sync.
-    Promise.resolve().then(sync)
-    return () => {
-      cancelled = true
-    }
+    fetchTasks()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId])
 
-  const refresh = () => {
-    if (userId) setTasks(getTasks(userId))
+  const refresh = async () => {
+    await fetchTasks()
   }
 
   return {
     tasks,
-    addTask: (task) => {
-      addTask(userId, task)
-      refresh()
+    loading,
+    error,
+    addTask: async (task) => {
+      try {
+        await addTask(task)
+        await refresh()
+      } catch (err) {
+        console.error('Failed to add task:', err)
+        throw err
+      }
     },
-    updateTask: (taskId, updates) => {
-      updateTask(userId, taskId, updates)
-      refresh()
+    updateTask: async (taskId, updates) => {
+      try {
+        await updateTask(taskId, updates)
+        await refresh()
+      } catch (err) {
+        console.error('Failed to update task:', err)
+        throw err
+      }
     },
-    deleteTask: (taskId) => {
-      deleteTask(userId, taskId)
-      refresh()
+    deleteTask: async (taskId) => {
+      try {
+        await deleteTask(taskId)
+        await refresh()
+      } catch (err) {
+        console.error('Failed to delete task:', err)
+        throw err
+      }
     },
-    toggleTask: (taskId) => {
-      toggleTask(userId, taskId)
-      refresh()
+    toggleTask: async (task) => {
+      try {
+        await toggleTask(task)
+        await refresh()
+      } catch (err) {
+        console.error('Failed to toggle task:', err)
+        throw err
+      }
     },
-    addSubtask: (taskId, subtask) => {
-      addSubtask(userId, taskId, subtask)
-      refresh()
+    addSubtask: async (taskId, subtask) => {
+      try {
+        await addSubtask(taskId, subtask)
+        await refresh()
+      } catch (err) {
+        console.error('Failed to add subtask:', err)
+        throw err
+      }
     },
-    updateSubtask: (taskId, subtaskId, updates) => {
-      updateSubtask(userId, taskId, subtaskId, updates)
-      refresh()
+    updateSubtask: async (subtaskId, updates) => {
+      try {
+        await updateSubtask(subtaskId, updates)
+        await refresh()
+      } catch (err) {
+        console.error('Failed to update subtask:', err)
+        throw err
+      }
     },
-    deleteSubtask: (taskId, subtaskId) => {
-      deleteSubtask(userId, taskId, subtaskId)
-      refresh()
+    deleteSubtask: async (subtaskId) => {
+      try {
+        await deleteSubtask(subtaskId)
+        await refresh()
+      } catch (err) {
+        console.error('Failed to delete subtask:', err)
+        throw err
+      }
     },
-    toggleSubtask: (taskId, subtaskId) => {
-      toggleSubtask(userId, taskId, subtaskId)
-      refresh()
+    toggleSubtask: async (subtask) => {
+      try {
+        await toggleSubtask(subtask)
+        await refresh()
+      } catch (err) {
+        console.error('Failed to toggle subtask:', err)
+        throw err
+      }
     },
-    updateTaskStatus: (taskId, status) => {
-      updateTaskStatus(userId, taskId, status)
-      refresh()
+    updateTaskStatus: async (taskId, status) => {
+      try {
+        await updateTaskStatus(taskId, status)
+        await refresh()
+      } catch (err) {
+        console.error('Failed to update task status:', err)
+        throw err
+      }
     },
   }
 }
