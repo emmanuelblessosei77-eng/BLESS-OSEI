@@ -1,6 +1,7 @@
 import { useLocation, useNavigate } from 'react-router-dom'
 import {
   CheckboxField,
+  Footer,
   FormContainer,
   FormFields,
   FormMessage,
@@ -196,6 +197,7 @@ function Login() {
           </button>
         </FormContainer>
       </Card>
+      <Footer />
     </div>
   )
 }

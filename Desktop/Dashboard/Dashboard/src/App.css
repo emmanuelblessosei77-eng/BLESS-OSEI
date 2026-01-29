@@ -537,3 +537,20 @@
     transform: scale(1);
   }
 }
+
+/* Footer Styles */
+.footer {
+  text-align: center;
+  padding: 16px;
+  margin-top: 24px;
+  border-top: 1px solid #1f2937;
+  background: rgba(15, 23, 42, 0.5);
+  border-radius: 8px;
+}
+
+.footer-text {
+  margin: 0;
+  font-size: 14px;
+  color: #9ca3af;
+  font-weight: 500;
+}

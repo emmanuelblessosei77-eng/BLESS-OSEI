@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import {
+  Footer,
   FormContainer,
   FormFields,
   FormMessage,
@@ -132,6 +133,7 @@ function Signup() {
           />
         </FormContainer>
       </Card>
+      <Footer />
     </div>
   )
 }
